@@ -57,6 +57,7 @@
 				if (!timedOut) {
 					var fired = err ? err : resp;
 					this.fire("response", {
+						responsetext: fired.responseText,
 						status: fired.status,
 						limit: Number(fired.getResponseHeader("X-RateLimit-Limit")),
 						remaining: Number(fired.getResponseHeader("X-RateLimit-Remaining")),
@@ -155,14 +156,14 @@
 
 		buildRouteUrl: function(waypoints, options) {
 			var computeInstructions =
-				/* Instructions are always needed, 
+				/* Instructions are always needed,
 				   since we do not have waypoint indices otherwise */
 				true,
 				//!(options && options.geometryOnly),
 				locs = [],
 				i,
 				baseUrl;
-			
+
 			for (i = 0; i < waypoints.length; i++) {
 				locs.push('point=' + waypoints[i].latLng.lat + ',' + waypoints[i].latLng.lng);
 			}
