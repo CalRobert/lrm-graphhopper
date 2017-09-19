@@ -187,7 +187,7 @@ if (typeof module !== undefined) module.exports = polyline;
 },{}],3:[function(require,module,exports){
 (function (global){
 (function() {
-	'use strict';
+	// 'use strict';
 
 	var L = (typeof window !== "undefined" ? window['L'] : typeof global !== "undefined" ? global['L'] : null);
 	var corslite = require('corslite');
@@ -238,41 +238,53 @@ if (typeof module !== undefined) module.exports = polyline;
 				});
 			}
 
-			corslite(url, L.bind(function(err, resp) {
+			if (context.options.routerJson){
 				var data;
-
 				clearTimeout(timer);
 				if (!timedOut) {
-					var fired = err ? err : resp;
-					this.fire("response", {
-						responsetext: fired.responseText,
-						status: fired.status,
-						limit: Number(fired.getResponseHeader("X-RateLimit-Limit")),
-						remaining: Number(fired.getResponseHeader("X-RateLimit-Remaining")),
-						reset: Number(fired.getResponseHeader("X-RateLimit-Reset")),
-						credits: Number(fired.getResponseHeader("X-RateLimit-Credits"))
-					});
-					if (!err) {
-						data = JSON.parse(resp.responseText);
-						this._routeDone(data, wps, callback, context);
-					} else {
-						var finalResponse;
-						var responseText = err && err.responseText;
-						try {
-							finalResponse = JSON.parse(responseText);
-						} catch (e) {
-							finalResponse = responseText;
-						}
+					this.fire("response", {	});
 
-						callback.call(context || callback, {
-							status: -1,
-							message: 'HTTP request failed: ' + err,
-							response: finalResponse
-						});
-					}
+					data = JSON.parse(context.options.routerJson);
+					this._routeDone(data, wps, callback, context);
 				}
-			}, this));
+			} else {
+				corslite(url, L.bind(function(err, resp) {
+					var data;
 
+					clearTimeout(timer);
+					if (!timedOut) {
+						var fired = err ? err : resp;
+						this.fire("response", {
+							responsetext: fired.responseText,
+							status: fired.status,
+							limit: Number(fired.getResponseHeader("X-RateLimit-Limit")),
+							remaining: Number(fired.getResponseHeader("X-RateLimit-Remaining")),
+							reset: Number(fired.getResponseHeader("X-RateLimit-Reset")),
+							credits: Number(fired.getResponseHeader("X-RateLimit-Credits"))
+						});
+						if (!err) {
+							data = JSON.parse(resp.responseText);
+							this._routeDone(data, wps, callback, context);
+						} else {
+							var finalResponse;
+							var responseText = err && err.responseText;
+							try {
+								finalResponse = JSON.parse(responseText);
+							} catch (e) {
+								finalResponse = responseText;
+							}
+
+							callback.call(context || callback, {
+								status: -1,
+								message: 'HTTP request failed: ' + err,
+								response: finalResponse
+							});
+						}
+					}
+				}, this));
+			// DEBUG
+			}
+			// END DEBUG
 			return this;
 		},
 
